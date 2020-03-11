@@ -20,7 +20,7 @@ char* command[] = {
 	"cp",      //
 	"ls",      // done
 	"mkdir",   // done
-	"rmdir",   //
+	"rmdir",   // done
 	"mkfile",  //
 	"rmfile",  //
 	"help"     //
@@ -159,6 +159,21 @@ void make_directory(char* dir)
 	}
 }
 
+void remove_directory(char* dir)
+{
+	if (dir == NULL) 
+	{
+		fprintf(stderr, "Error: Excepted argument to \"rmdir\".\n");
+		return;
+	}	
+
+	if (rmdir(dir) != 0)
+	{
+		fprintf(stderr, "Error: Can't remove directory: no such directory.\n");
+		return;
+	}
+}
+
 void change_directory(char* dir)
 {
 	if (dir == NULL) 
@@ -200,6 +215,9 @@ int execute(char** arg)
 			else
 				if (command[i] == "mkdir")
 					make_directory(arg[1]);
+			else
+				if (command[i] == "rmdir")
+					remove_directory(arg[1]);
 
 		return 1;
 		}
