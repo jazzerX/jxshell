@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -21,7 +22,7 @@ char* command[] = {
 	"ls",      // done
 	"mkdir",   // done
 	"rmdir",   // done
-	"mkfile",  //
+	"mkfile",  // done
 	"rmfile",  //
 	"help"     //
 };
@@ -199,6 +200,46 @@ void change_directory(char* dir)
 	}
 }
 
+void make_file(char* filename)
+{
+	if (filename == NULL)
+	{
+		fprintf(stderr, "Error: Excepted argument to \"mkfile\".\n");
+		return;
+	}
+
+	int fd;
+
+	fd = open(filename, O_WRONLY);
+	if (fd != -1)
+	{
+		fprintf(stderr, "Error: file %s already exist.\n", filename);
+		return;		
+	}
+
+	fd = creat(filename, O_CREAT | O_TRUNC | S_IRWXU | S_IRWXG);
+	if (fd == -1)
+	{
+		fprintf(stderr, "Error: Couldn't create file %s.\n", filename);
+		return;
+	}
+}
+
+void remove_file(char* filename)
+{
+	if (filename == NULL)
+	{
+		fprintf(stderr, "Error: Excepted argument to \"rmfile\".\n");
+		return;
+	}
+
+	if (unlink(filename) == -1)
+	{
+		fprintf(stderr, "Error: Couldn't remove file %s\n", filename);
+		return;
+	}
+}
+
 int execute(char** arg)
 {
 	for (int i = 0; i < sizeof(command) / sizeof(char*); i++)
@@ -208,23 +249,46 @@ int execute(char** arg)
 				return 0;
 			else 
 				if (command[i] == "cd") 
+				{
 					change_directory(arg[1]);
+					return 1;
+				}
 			else 
 				if (command[i] == "ls") 
+				{
 					scan_directory(arg[1]);
+					return 1;			
+				}
 			else
-				if (command[i] == "mkdir")
+				if (command[i] == "mkdir") 
+				{
 					make_directory(arg[1]);
+					return 1;			
+				}
 			else
-				if (command[i] == "rmdir")
+				if (command[i] == "rmdir") 
+				{
 					remove_directory(arg[1]);
-
-		return 1;
+					return 1;
+				}
+			else
+				if (command[i] == "mkfile")
+				{
+					make_file(arg[1]);
+					return 1;
+				}
+			else
+				if (command[i] == "rmfile")
+				{
+					remove_file(arg[1]);
+					return 1;	
+				}
+			else
+			{
+				printf("Command '%s' not found.\n", arg[0]);
+				return -1;
+			}
 		}
-
-	printf("Command '%s' not found.\n", arg[0]);
-
-	return -1;
 }
 
 int main()
