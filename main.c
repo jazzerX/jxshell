@@ -18,14 +18,17 @@
 char* command[] = {
 	"exit",    // done
 	"cd",      // done
-	"cp",      //
 	"ls",      // done
+	"copy",    // done
 	"mkdir",   // done
 	"rmdir",   // done
 	"mkfile",  // done
-	"rmfile",  //
-	"help"     //
+	"rmfile",  // done
+	"clear",   // done
+	"help"     // done
 };
+
+#define COMMAND_COUNT sizeof(command) / sizeof(char*)
 
 char* read_line()
 {
@@ -214,6 +217,8 @@ void make_file(char* filename)
 	if (fd != -1)
 	{
 		fprintf(stderr, "Error: file %s already exist.\n", filename);
+		if (close(fd) != 0)	
+			fprintf(stderr, "Error: Existing file %s was not closed succussfully.\n", filename);
 		return;		
 	}
 
@@ -240,9 +245,32 @@ void remove_file(char* filename)
 	}
 }
 
+void copy_file(char* input_file, char* output_file)
+{
+	if (input_file == NULL || output_file == NULL)
+	{
+		fprintf(stderr, "Error: Excepted 2 arguments to \"copy\".\n");
+		return;
+	}
+
+	if (fork() == 0)
+		execl("./copy", input_file, output_file, NULL);
+}
+
+void help()
+{
+	printf("This shell is created by jazzerX.\n");
+	printf("The list of commands:\n");
+
+	for (int i = 0; i < COMMAND_COUNT; ++i)
+	{
+		printf("> %s\n", command[i]);
+	}
+}
+
 int execute(char** arg)
 {
-	for (int i = 0; i < sizeof(command) / sizeof(char*); i++)
+	for (int i = 0; i < COMMAND_COUNT; i++)
 		if (strcmp(arg[0], command[i]) == 0)
 		{
 			if (command[i] == "exit")
@@ -284,18 +312,37 @@ int execute(char** arg)
 					return 1;	
 				}
 			else
-			{
-				printf("Command '%s' not found.\n", arg[0]);
-				return -1;
-			}
+				if (command[i] == "copy")
+				{
+					copy_file(arg[1], arg[2]);
+					return 1;
+				}
+			else
+				if (command[i] == "clear")
+				{
+					system("clear");
+					return 1;
+				}
+			else
+				if (command[i] = "help")
+				{
+					help();
+					return 1;
+				}
 		}
+
+	printf("Command '%s' not found.\n", arg[0]);
+	return -1;
 }
 
 int main()
 {    
+	system("clear");
+
 	char hostname[_SC_HOST_NAME_MAX + 1];
 	gethostname(hostname, _SC_HOST_NAME_MAX + 1);
 
+	chdir(getenv("HOME"));
 	char pathname[PATH_MAX + 1];
 	getcwd(pathname, PATH_MAX + 1);
 
