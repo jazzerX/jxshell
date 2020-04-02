@@ -7,7 +7,7 @@
 
 void file_error(const char* msg, const char* filename)
 {
-	fprintf(stderr, "Could not %s file %s.\n", msg, filename);
+	fprintf(stderr, "Error: Could not %s file %s.\n", msg, filename);
 	exit(EXIT_FAILURE);
 }
 
@@ -22,9 +22,9 @@ int main(int argc, char const *argv[])
 	if (input_fd == -1)
 		file_error("open", argv[0]);
 
-	output_fd = open(argv[1], O_WRONLY | O_CREAT | O_EXCL | S_IRUSR | S_IRGRP | S_IROTH);
+	output_fd = open(argv[1], O_WRONLY | S_IRUSR | S_IRGRP | S_IROTH);
 	if (output_fd == -1)
-		file_error("create", argv[1]);
+		output_fd = open(argv[1], O_WRONLY | O_CREAT | O_EXCL | S_IRUSR | S_IRGRP | S_IROTH);
 
 	while ((num_read = read(input_fd, buf, BUFF_SIZE)) > 0)
 		if (write(output_fd, buf, num_read) != num_read)

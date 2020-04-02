@@ -255,6 +255,8 @@ void copy_file(char* input_file, char* output_file)
 
 	if (fork() == 0)
 		execl("./copy", input_file, output_file, NULL);
+
+	return;
 }
 
 void help()
@@ -266,6 +268,8 @@ void help()
 	{
 		printf("> %s\n", command[i]);
 	}
+
+	return;
 }
 
 int execute(char** arg)
